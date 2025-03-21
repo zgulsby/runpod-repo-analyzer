@@ -1,0 +1,94 @@
+# .cursorrules
+
+## Project Overview
+- **Objective**: Develop a lightweight AI tool for the RunPod platform to:
+  - Identify varied repository types.
+  - Generate RunPod-required files (`hub.json`, `tests.json`, `Dockerfile`, `handler.py`).
+
+## Development Guidelines
+
+### 1. Repository Analysis
+- **File Detection**: Implement logic to detect key files (`requirements.txt`, `package.json`, `Dockerfile`, etc.) to determine the repository type.
+- **Language Identification**: Use file extensions and content analysis to identify the programming language used.
+
+### 2. Metadata Generation (`hub.json`)
+- **Title**: Extract from `README.md` or use the repository name.
+- **Description**: Summarize the content of `README.md`.
+- **Tags**: Infer from topics listed in the repository or keywords in the description.
+- **Environment Variables**: Identify from configuration files like `.env.example` or `config.yml`.
+
+### 3. Test Payloads (`tests.json`)
+- **API Repositories**: Generate sample JSON payloads based on detected endpoints.
+- **ML Models**: Create dummy input data suitable for the model's expected input format.
+
+### 4. Dockerfile Creation
+- **Existing Dockerfile**: If present, review and adapt as necessary.
+- **No Dockerfile**: Generate a new one based on detected dependencies and best practices.
+
+### 5. RunPod Serverless Handler (`handler.py`)
+- **Function Definition**: Create a handler function that processes input and returns the appropriate response.
+- **Integration**: Ensure compatibility with RunPod's serverless architecture.
+
+## Coding Standards
+- **Language**: Python (preferred for AI and automation tasks).
+- **Style Guide**: Follow PEP 8 guidelines.
+- **Documentation**: Use docstrings for functions and classes; maintain an updated `README.md`.
+
+## Testing
+- **Unit Tests**: Write tests for individual functions using `unittest` or `pytest`.
+- **Integration Tests**: Ensure that the AI tool interacts correctly with GitHub APIs and the RunPod platform.
+- **Continuous Integration**: Set up CI pipelines to run tests on each commit.
+
+## Security Considerations
+- **Sensitive Data**: Avoid hardcoding sensitive information; use environment variables.
+- **Dependency Management**: Regularly update dependencies to patch vulnerabilities.
+- **Input Validation**: Validate and sanitize all external inputs to prevent security issues.
+
+## Documentation
+- **User Guide**: Provide clear instructions on setting up and using the AI tool.
+- **Developer Guide**: Document the codebase to assist future developers in understanding and extending the project.
+
+## Cursor Rules Enhancements
+
+### Common Files
+- **Dockerfile Entry Point**: Define entry points clearly (`ENTRYPOINT [,]`).
+- **YAML Key-Value Pair**: Facilitate easy key-value editing (`: ,`).
+- **Handler Definition**: Quickly define handler functions (`def handler(event):,`).
+
+### Template Placeholders
+- **hub.json Placeholder**: Standardize placeholder formatting (`"title": "",|`).
+- **tests.json Placeholder**: Define consistent payload placeholders (`"payload": {},|`).
+
+### Navigation and Editing
+- **Function Parameters**: Simplify parameter editing (`(,)`).
+- **Brackets and Braces**: Efficient navigation through code blocks (`[,]`, `{,}`).
+
+### Environment Variables
+- **Definition and Usage**: Streamlined editing and referencing of environment variables (`ENV ,=`, `${,}`).
+
+### Markdown Documentation
+- **Links and Headers**: Quick insertion of markdown elements (`[,]()`, `## ,`).
+
+### Configuration Files
+- **YAML Lists**: Easily manage list items (`- ,`).
+- **JSON Properties**: Quickly create and edit JSON properties (`"": ,`).
+
+### Testing Framework Snippets
+- **pytest Function**: Rapid definition of pytest functions (`def test_():,`).
+- **unittest Function**: Quick creation of unittest cases (`def test_(self):,`).
+
+### Logging and Error Handling
+- **Debugging and Errors**: Simplify logging calls (`logging.debug(,)`, `logging.error(,)`).
+- **Exceptions**: Quick raising of exceptions (`raise ,()`).
+
+### CI/CD Workflow
+- **CI YAML Job**: Efficient job and step definition (`job:,steps:`).
+- **Workflow Steps**: Clear step creation (`- name:,run:`).
+
+### Security Snippets
+- **Input Sanitization and Validation**: Standardize input security methods (`sanitize_input(,)`, `validate_input(,)`).
+
+## Additional Resources
+- **Cursor Project Starter Template**: Utilize the foundational project template designed for AI-assisted development with Cursor IDE.
+- **Awesome CursorRules**: Refer to curated `.cursorrules` examples for various project types to tailor the AI assistant's behavior.
+- **Cursor Prompt Templates**: Explore and customize prompt templates to enhance AI-assisted coding efficiency. 

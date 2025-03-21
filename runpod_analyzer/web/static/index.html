@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunPod Repository Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>RunPod Repository Analyzer</h1>
+            <p>Analyze GitHub repositories and generate RunPod-required files</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <form id="analyze-form">
+                    <div class="input-group">
+                        <input type="url" id="repo-url" name="repo-url" 
+                               placeholder="Enter GitHub repository URL (e.g., https://github.com/username/repo)"
+                               required>
+                        <button type="submit">Analyze</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="loading" class="hidden">
+                <div class="loader"></div>
+                <p>Analyzing repository...</p>
+            </section>
+
+            <section id="results" class="hidden">
+                <div class="repo-info">
+                    <h2>Repository Analysis</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <h3>Type</h3>
+                            <p id="repo-type"></p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Confidence</h3>
+                            <p id="repo-confidence"></p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Languages</h3>
+                            <p id="repo-languages"></p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Dependencies</h3>
+                            <p id="repo-dependencies"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="generated-files">
+                    <h2>Generated Files</h2>
+                    
+                    <div class="file-tabs">
+                        <button class="tab-btn active" data-tab="hub">hub.json</button>
+                        <button class="tab-btn" data-tab="tests">tests.json</button>
+                        <button class="tab-btn" data-tab="dockerfile">Dockerfile</button>
+                        <button class="tab-btn" data-tab="handler">handler.py</button>
+                    </div>
+
+                    <div class="file-content">
+                        <pre><code id="file-display" class="language-json"></code></pre>
+                    </div>
+
+                    <div class="download-section">
+                        <button id="download-all">Download All Files</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="error" class="hidden">
+                <div class="error-message">
+                    <h2>Error</h2>
+                    <p id="error-text"></p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Made with ❤️ for RunPod</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html> 
