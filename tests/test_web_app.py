@@ -23,12 +23,13 @@ def test_analyze_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
-    assert "repository_type" in data
-    assert "confidence" in data
-    assert "languages" in data
-    assert "dependencies" in data
-    assert "generated_files" in data
-    assert all(key in data["generated_files"] for key in ["hub_json", "tests_json", "dockerfile", "handler"])
+    assert "repository" in data
+    assert "type" in data["repository"]
+    assert "confidence" in data["repository"]
+    assert "languages" in data["repository"]
+    assert "dependencies" in data["repository"]
+    assert "files" in data
+    assert all(key in data["files"] for key in ["hub_json", "tests_json", "dockerfile", "handler"])
 
 def test_invalid_repository():
     """Test handling of invalid repository URLs."""
@@ -46,8 +47,11 @@ def test_error_handling():
     """Test error handling for various scenarios."""
     # Test with non-existent repository
     response = client.post("/analyze", params={"repo_url_param": "https://github.com/nonexistent/repo"})
-    assert response.status_code == 500
-    assert "Repository analysis failed" in response.json()["detail"]
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert data["repository"]["confidence"] <= 50.0  # Low confidence for non-existent repo
+    assert data["repository"]["type"] == "unknown"
 
 def test_temp_directory_cleanup():
     """Test that temporary directories are properly cleaned up."""

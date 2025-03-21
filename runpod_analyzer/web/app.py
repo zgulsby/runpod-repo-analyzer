@@ -115,12 +115,22 @@ def timeout(seconds, error_message="Operation timed out"):
     def signal_handler(signum, frame):
         raise TimeoutError(error_message)
     
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
+    try:
+        # Only set up signal handling in the main thread
+        signal.signal(signal.SIGALRM, signal_handler)
+        signal.alarm(seconds)
+        has_alarm = True
+    except ValueError:
+        # If we're not in the main thread, we can't use signal
+        # Just continue without a timeout
+        has_alarm = False
+        logging.warning("Timeout not available: not running in main thread")
+    
     try:
         yield
     finally:
-        signal.alarm(0)
+        if has_alarm:
+            signal.alarm(0)
 
 def perform_repository_analysis(repo_url: str) -> Dict[str, Any]:
     """

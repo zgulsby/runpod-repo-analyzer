@@ -240,10 +240,10 @@ def generate_hub_json(repo_path: Path, analysis: RepositoryAnalysis) -> Dict[str
     Generate a hub.json file with metadata about the repository.
     """
     # Extract repository name as title
-    title = extract_title(repo_path)
+    readme_path = repo_path / "README.md"
+    title = extract_title(readme_path, repo_path)
     
     # Extract description from README
-    readme_path = repo_path / "README.md"
     description = extract_description(readme_path)
     
     # Determine tags based on repository type and dependencies
@@ -290,6 +290,7 @@ def generate_hub_json(repo_path: Path, analysis: RepositoryAnalysis) -> Dict[str
     hub_json = {
         "title": title,
         "description": description,
+        "tags": tags,
         "type": repo_type,
         "category": category,
         "iconUrl": "https://raw.githubusercontent.com/runpod/runpod-icons/main/default.svg",
