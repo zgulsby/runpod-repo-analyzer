@@ -312,8 +312,8 @@ def analyze_repository(repo_url: str, clone_path: Optional[str] = None) -> Repos
             confidence=confidence,
             languages=languages,
             dependencies=dependencies,
-            source_dir=source_dir,
-            repo_url=repo_url  # Store the repository URL in the analysis object
+            test_cases=[],  # Empty list for now, could be filled later
+            repository_url=repo_url  # Store the repository URL in the analysis object
         )
         
         return analysis
