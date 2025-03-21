@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 from .types import RepoType
 import os
 
@@ -662,4 +662,66 @@ def save_tests_json(repo_path: Path, test_cases: List[dict]) -> None:
     }
     tests_path = repo_path / "tests.json"
     with open(tests_path, "w") as f:
-        json.dump(tests_json, f, indent=2) 
+        json.dump(tests_json, f, indent=2)
+
+def generate_test_cases(repo_type: RepoType, dependencies: Set[str]) -> List[dict]:
+    """Generate test cases for the repository based on its type and dependencies.
+    
+    This function provides a consistent interface for generating test cases across
+    different repository types. It handles special cases for transformers and 
+    tensorflow repositories, which need different input formats. For other
+    repository types, it delegates to generate_test_payloads.
+    
+    Args:
+        repo_type: Type of the repository
+        dependencies: Set of dependencies used in the repository
+        
+    Returns:
+        List of test cases
+    """
+    # Create a temporary directory to pass to generate_test_payloads
+    import tempfile
+    temp_dir = Path(tempfile.mkdtemp())
+    
+    try:
+        # If we have dependencies for specific frameworks, create mock files to help detection
+        if dependencies:
+            # Create requirements.txt with the dependencies
+            with open(temp_dir / "requirements.txt", "w") as f:
+                f.write("\n".join(dependencies))
+        
+        # Special case for transformers
+        if repo_type == RepoType.ML_MODEL and 'transformers' in dependencies:
+            return [
+                {
+                    "input": {
+                        "text": "Hello world",
+                        "parameters": {
+                            "max_length": 50,
+                            "do_sample": True,
+                            "temperature": 0.7
+                        }
+                    }
+                }
+            ]
+        # Special case for tensorflow
+        elif repo_type == RepoType.ML_MODEL and 'tensorflow' in dependencies:
+            return [
+                {
+                    "input": {
+                        "data": [1.0, 2.0, 3.0, 4.0, 5.0],
+                        "parameters": {
+                            "batch_size": 1,
+                            "model_type": "classification"
+                        }
+                    }
+                }
+            ]
+        # Default case
+        else:
+            # Generate test payloads based on repository type
+            return generate_test_payloads(temp_dir, repo_type)
+    finally:
+        # Clean up the temporary directory
+        import shutil
+        shutil.rmtree(temp_dir) 

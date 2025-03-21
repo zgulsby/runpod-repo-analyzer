@@ -17,21 +17,24 @@ def _generate_imports(dependencies: set) -> str:
     """Generate import statements based on detected dependencies."""
     imports = ["import runpod", "import os", "import json"]
     
-    if 'torch' in dependencies:
+    # Add transformers import if present, regardless of other dependencies
+    if 'transformers' in dependencies:
+        imports.extend([
+            "from transformers import AutoTokenizer, AutoModel",
+            "import torch"
+        ])
+    # Add torch imports if present and transformers is not
+    elif 'torch' in dependencies:
         imports.extend([
             "import torch",
             "import torch.nn as nn",
             "import torch.nn.functional as F"
         ])
+    # Add tensorflow imports if present
     elif 'tensorflow' in dependencies:
         imports.extend([
             "import tensorflow as tf",
             "import numpy as np"
-        ])
-    elif 'transformers' in dependencies:
-        imports.extend([
-            "from transformers import AutoTokenizer, AutoModel",
-            "import torch"
         ])
     
     return "\n".join(imports)
@@ -158,9 +161,26 @@ def generate_handler(output_dir: Path, repo_type: RepoType, dependencies: Set[st
     handler_content += 'if __name__ == "__main__":\n'
     handler_content += '    runpod.serverless.start({"handler": handler})\n'
 
+    return handler_content 
+
+def save_handler(output_dir: Path, handler_content: str) -> Path:
+    """Save handler content to handler.py file in the specified directory.
+    
+    This function was added to separate the file generation logic from the content 
+    generation logic in generate_handler, making it easier to test and use in
+    different contexts. It's similar to the save_dockerfile and save_metadata
+    functions in the other generator modules.
+    
+    Args:
+        output_dir: Directory to save the handler.py file
+        handler_content: Content of the handler.py file
+        
+    Returns:
+        Path to the saved handler.py file
+    """
     handler_path = output_dir / "handler.py"
     with open(handler_path, "w") as f:
         f.write(handler_content)
-    logger.info(f"Generated handler.py: {handler_path}")
+    logger.info(f"Saved handler.py: {handler_path}")
     
-    return handler_content 
+    return handler_path 

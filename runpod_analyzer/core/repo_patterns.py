@@ -202,6 +202,34 @@ def clone_repository(url: str, target_dir: str) -> None:
         logger.error(f"Stack trace: {traceback.format_exc()}")
         raise RuntimeError(f"Failed to clone repository: {str(e)}")
 
+def get_cached_repo_path(repo_url: str) -> Optional[Path]:
+    """
+    Check if a repository has already been cloned to a cache directory.
+    
+    Args:
+        repo_url: URL of the GitHub repository
+        
+    Returns:
+        Path to the cached repository if it exists, None otherwise
+    """
+    # For now, just return None since we don't have cache logic implemented
+    return None
+
+def clone_or_update_repo(repo_url: str, target_dir: Path) -> None:
+    """Clone a repository or update it if it already exists.
+    
+    This function serves as a bridge between the high-level analysis code and
+    the low-level clone_repository function. It's designed to make it easier
+    to add repository caching or other optimization in the future without
+    changing the interface used by analyze_repository.
+    
+    Args:
+        repo_url: URL of the repository to clone
+        target_dir: Directory to clone the repository to
+    """
+    # For now, just call clone_repository
+    clone_repository(repo_url, str(target_dir))
+
 def analyze_repository(repo_url: str, clone_path: Optional[str] = None) -> RepositoryAnalysis:
     """
     Analyze a GitHub repository and return insights about its type and structure.

@@ -165,7 +165,7 @@ def extract_description(readme_path: Path) -> str:
         logging.error(f"Error extracting description from README: {str(e)}")
         return "No description available"
 
-def extract_tags(readme_path: Path, repo_path: Path) -> List[str]:
+def extract_tags(repo_path: Path, readme_content: str) -> List[str]:
     """Infer tags from README content and repository structure"""
     tags = set()
     
@@ -180,8 +180,8 @@ def extract_tags(readme_path: Path, repo_path: Path) -> List[str]:
         tags.add('javascript')
     
     # Add tags from README content
-    if readme_path.exists():
-        content = safe_read_file(readme_path).lower()
+    if readme_content:
+        content = readme_content.lower()
         if content:
             # Common technology keywords
             keywords = {
@@ -247,7 +247,7 @@ def generate_hub_json(repo_path: Path, analysis: RepositoryAnalysis) -> Dict[str
     description = extract_description(readme_path)
     
     # Determine tags based on repository type and dependencies
-    tags = extract_tags(readme_path, repo_path)
+    tags = extract_tags(repo_path, safe_read_file(readme_path))
     
     # Extract environment variables from code and config files
     env_vars = extract_env_vars(repo_path)
@@ -368,53 +368,47 @@ def save_hub_json(repo_path: Path, metadata: Dict[str, Any]) -> None:
     with open(hub_path, "w") as f:
         json.dump(metadata, f, indent=2)
 
-def extract_title_from_readme(repo_path: str) -> str:
-    """Extract title from README.md file."""
-    readme_path = os.path.join(repo_path, "README.md")
-    if os.path.exists(readme_path):
+def extract_title_from_readme(readme_content: str) -> str:
+    """Extract title from README.md content."""
+    if readme_content:
         try:
-            with open(readme_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                # Look for first heading
-                lines = content.split('\n')
-                for line in lines:
-                    line = line.strip()
-                    if line.startswith('# '):
-                        return line.lstrip('# ').strip()
-                    elif line.startswith('=='):
-                        return lines[0].strip()
+            # Look for first heading
+            lines = readme_content.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.startswith('# '):
+                    return line.lstrip('# ').strip()
+                elif line.startswith('=='):
+                    return lines[0].strip()
         except Exception:
             pass
     
-    # If no README or no title found, use directory name
-    return os.path.basename(repo_path)
+    # If no README or no title found, return a generic title
+    return "RunPod Serverless Project"
 
-def extract_description_from_readme(repo_path: str) -> str:
-    """Extract description from README.md file."""
-    readme_path = os.path.join(repo_path, "README.md")
-    if os.path.exists(readme_path):
+def extract_description_from_readme(readme_content: str) -> str:
+    """Extract description from README.md content."""
+    if readme_content:
         try:
-            with open(readme_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                # Look for first paragraph after title
-                lines = content.split('\n')
-                description = []
-                found_title = False
+            # Look for first paragraph after title
+            lines = readme_content.split('\n')
+            description = []
+            found_title = False
+            
+            for line in lines:
+                line = line.strip()
+                if not found_title:
+                    if line.startswith('# ') or line.startswith('=='):
+                        found_title = True
+                    continue
                 
-                for line in lines:
-                    line = line.strip()
-                    if not found_title:
-                        if line.startswith('# ') or line.startswith('=='):
-                            found_title = True
-                        continue
-                    
-                    if line and not line.startswith('#'):
-                        description.append(line)
-                    elif description:  # Stop at next heading if we have description
-                        break
-                
-                if description:
-                    return ' '.join(description)
+                if line and not line.startswith('#'):
+                    description.append(line)
+                elif description:  # Stop at next heading if we have description
+                    break
+            
+            if description:
+                return ' '.join(description)
         except Exception:
             pass
     
