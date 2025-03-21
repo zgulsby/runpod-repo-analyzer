@@ -1,6 +1,6 @@
 # RunPod Repository Analyzer
 
-A tool to analyze repositories and generate RunPod-required files (`hub.json`, `tests.json`, `Dockerfile`, `handler.py`).
+A tool to analyze repositories and generate RunPod-required files for the RunPod Hub (`hub.json`, `tests.json`, `Dockerfile`, `handler.py`).
 
 ## Features
 
