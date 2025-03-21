@@ -14,6 +14,7 @@ import shutil
 import logging
 import traceback
 import time
+import re
 
 # Configure logging with more detailed format
 logger = logging.getLogger(__name__)
@@ -215,6 +216,29 @@ def get_cached_repo_path(repo_url: str) -> Optional[Path]:
     # For now, just return None since we don't have cache logic implemented
     return None
 
+def get_all_files(repo_path: Path) -> List[Path]:
+    """Get all files in a repository directory, excluding common directories to ignore.
+    
+    Args:
+        repo_path: Path to the repository
+        
+    Returns:
+        List of file paths
+    """
+    all_files = []
+    ignore_dirs = {'.git', 'node_modules', 'venv', '.venv', '__pycache__', '.pytest_cache'}
+    
+    for root, dirs, files in os.walk(repo_path):
+        # Remove directories to ignore
+        dirs[:] = [d for d in dirs if d not in ignore_dirs]
+        
+        # Add all files in the current directory
+        for file in files:
+            file_path = Path(root) / file
+            all_files.append(file_path)
+    
+    return all_files
+
 def clone_or_update_repo(repo_url: str, target_dir: Path) -> None:
     """Clone a repository or update it if it already exists.
     
@@ -274,13 +298,13 @@ def analyze_repository(repo_url: str, clone_path: Optional[str] = None) -> Repos
         repo_files = get_all_files(Path(source_dir))
         
         # Detect programming languages
-        languages = detect_languages(repo_files, Path(source_dir))
+        languages = detect_languages(str(Path(source_dir)))
         
         # Analyze dependencies
-        dependencies = analyze_dependencies(repo_files, Path(source_dir))
+        dependencies = analyze_dependencies(Path(source_dir))
         
         # Match repository patterns to determine type and other properties
-        repo_type, confidence = match_pattern(repo_files, Path(source_dir), languages, dependencies)
+        repo_type, confidence = match_pattern(Path(source_dir), languages, dependencies)
         
         # Create the analysis result
         analysis = RepositoryAnalysis(
@@ -645,4 +669,73 @@ def _has_matching_deps(dependencies: Dict[str, List[str]], target_deps: set) -> 
     all_deps = set()
     for deps in dependencies.values():
         all_deps.update(deps)
-    return bool(all_deps.intersection(target_deps)) 
+    return bool(all_deps.intersection(target_deps))
+
+def analyze_dependencies(repo_path: Path) -> Set[str]:
+    """Analyze the repository to find dependencies.
+    
+    Args:
+        repo_path: Path to the repository
+        
+    Returns:
+        Set of dependency names
+    """
+    dependencies = set()
+    
+    # Check for Python dependencies
+    req_files = ['requirements.txt', 'requirements-dev.txt', 'requirements/prod.txt']
+    for req_file in req_files:
+        req_path = repo_path / req_file
+        if req_path.exists():
+            try:
+                with open(req_path, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            # Extract package name, ignoring version specifiers
+                            pkg = line.split('==')[0].split('>=')[0].split('<=')[0].split('<')[0].split('>')[0].split('[')[0].strip()
+                            if pkg:
+                                dependencies.add(pkg.lower())
+            except Exception:
+                pass
+    
+    # Check for setup.py
+    setup_py = repo_path / 'setup.py'
+    if setup_py.exists():
+        try:
+            with open(setup_py, 'r') as f:
+                content = f.read()
+                # Look for install_requires list
+                match = re.search(r'install_requires\s*=\s*\[(.*?)\]', content, re.DOTALL)
+                if match:
+                    deps_str = match.group(1)
+                    # Parse the string to extract package names
+                    for line in deps_str.split('\n'):
+                        line = line.strip().strip(',\'\"')
+                        if line and not line.startswith('#'):
+                            pkg = line.split('==')[0].split('>=')[0].split('<=')[0].split('<')[0].split('>')[0].split('[')[0].strip()
+                            if pkg:
+                                dependencies.add(pkg.lower())
+        except Exception:
+            pass
+    
+    # Check for package.json (Node.js)
+    package_json = repo_path / 'package.json'
+    if package_json.exists():
+        try:
+            import json
+            with open(package_json, 'r') as f:
+                data = json.load(f)
+                # Get dependencies and devDependencies
+                for dep_type in ['dependencies', 'devDependencies']:
+                    if dep_type in data:
+                        for pkg in data[dep_type]:
+                            dependencies.add(pkg.lower())
+        except Exception:
+            pass
+    
+    # Also look for imports directly in Python files
+    imports = _find_imports_in_code(str(repo_path))
+    dependencies.update(imports)
+    
+    return dependencies 
